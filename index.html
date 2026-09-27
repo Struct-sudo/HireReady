@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HireReady — Upload CV → Add Job Description → Analyze</title>
+<style>
+  :root {
+    --primary-800: #1E3A8A;
+    --primary-700: #1E40AF;
+    --primary-600: #1D4ED8;
+    --primary-100: #DBEAFE;
+    --accent-500: #7C3AED;
+    --neutral-900: #111827;
+    --neutral-600: #4B5563;
+    --neutral-300: #D1D5DB;
+    --neutral-100: #F3F4F6;
+    --neutral-0: #FFFFFF;
+    --success: #059669;
+    --warning: #D97706;
+    --danger: #DC2626;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --shadow: 0 4px 16px rgba(17,24,39,.08);
+    --shadow-primary: 0 8px 24px rgba(30,58,138,.38);
+    --font: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font); background: var(--neutral-100); color: var(--neutral-900); }
+  .wrap { max-width: 1020px; margin: 0 auto; padding: 28px 18px 64px; }
+  header { background: var(--neutral-0); border: 1px solid var(--neutral-300); border-radius: var(--radius-lg); padding: 22px 24px; box-shadow: var(--shadow); display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+  header h1 { margin: 0; font-size: 24px; }
+  header p { margin: 6px 0 0; color: var(--neutral-600); font-size: 14px; }
+  .badge { display: inline-block; background: var(--primary-100); color: var(--primary-700); font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 999px; margin-bottom: 8px; }
+  .steps { display: flex; gap: 8px; margin: 18px 0 0; padding: 0; list-style: none; flex-wrap: wrap; }
+  .steps li { font-size: 13px; font-weight: 700; background: #fff; border: 1px solid var(--neutral-300); padding: 6px 12px; border-radius: 999px; color: var(--neutral-600); }
+  .steps li.active { background: var(--primary-700); border-color: var(--primary-800); color: #fff; }
+  main { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
+  section { background: var(--neutral-0); border: 1px solid var(--neutral-300); border-radius: var(--radius-lg); padding: 22px; box-shadow: var(--shadow); }
+  h2 { margin: 0 0 6px; font-size: 18px; }
+  .sub { margin: 0 0 14px; font-size: 13px; color: var(--neutral-600); }
+  .dropzone { border: 2px dashed var(--neutral-300); border-radius: var(--radius-md); padding: 20px; text-align: center; background: #FAFAFA; cursor: pointer; }
+  .dropzone:hover, .dropzone.dragover { border-color: var(--primary-600); background: #EFF6FF; }
+  .dropzone input { display: none; }
+  .file-meta { font-size: 13px; margin-top: 10px; color: var(--neutral-600); word-break: break-word; }
+  .file-meta strong { color: var(--neutral-900); }
+  label { font-size: 14px; font-weight: 700; display: block; margin: 14px 0 6px; }
+  textarea { width: 100%; font-family: var(--font); font-size: 14px; padding: 12px; border: 1px solid var(--neutral-300); border-radius: var(--radius-md); resize: vertical; }
+  textarea:focus { outline: 2px solid var(--primary-100); border-color: var(--primary-600); }
+  .hint { font-size: 12px; color: var(--neutral-600); margin-top: 6px; }
+  .error { display: none; font-size: 13px; color: #fff; background: var(--danger); border-radius: var(--radius-md); padding: 10px 12px; margin-top: 10px; }
+  .actions { grid-column: 1 / -1; background: var(--neutral-0); border: 1px solid var(--neutral-300); border-radius: var(--radius-lg); padding: 20px 22px; box-shadow: var(--shadow); display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .btn-primary { background: var(--primary-700); color: #fff; font-size: 16px; font-weight: 800; padding: 15px 30px; border-radius: var(--radius-md); border: 2px solid var(--primary-800); box-shadow: var(--shadow-primary); cursor: pointer; }
+  .btn-primary:hover:not(:disabled) { background: var(--primary-800); transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }
+  .btn-secondary { background: #fff; border: 1px solid var(--neutral-300); border-radius: var(--radius-md); padding: 12px 18px; font-weight: 700; cursor: pointer; }
+  #results { grid-column: 1 / -1; display: none; }
+  .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  .card { border: 1px solid var(--neutral-300); border-radius: var(--radius-md); padding: 16px; font-size: 14px; }
+  .card.good { border-left: 5px solid var(--success); }
+  .card.gap { border-left: 5px solid var(--warning); }
+  .tag { display: inline-block; background: var(--neutral-100); border: 1px solid var(--neutral-300); border-radius: 999px; padding: 3px 10px; margin: 3px 4px 0 0; font-size: 13px; }
+  .card.good .tag { background: #ECFDF5; border-color: #A7F3D0; }
+  .card.gap .tag { background: #FFFBEB; border-color: #FDE68A; }
+  .note { font-size: 12px; color: var(--neutral-600); margin-top: 12px; }
+  @media (max-width: 820px) { main { grid-template-columns: 1fr; } .result-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="badge">HIREREADY • PROTOTYPE V0.1</div>
+      <h1>HireReady</h1>
+      <p>Upload your CV, paste a job description, and see how well they match.</p>
+      <ul class="steps">
+        <li class="active">1. Upload CV</li>
+        <li class="active">2. Add Job Description</li>
+        <li id="step3">3. Analyze</li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h2>1. Upload CV</h2>
+      <p class="sub">PDF, DOCX, or TXT up to 10MB. Review the extracted text before analyzing (PRD Feature 1).</p>
+      <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Upload CV">
+        <strong>Drop your CV here or click to browse</strong>
+        <div class="hint">Accepted: .pdf, .docx, .txt</div>
+        <input id="cvFile" type="file" accept=".pdf,.docx,.txt,.md" />
+      </div>
+      <div class="file-meta" id="fileMeta">No file selected yet.</div>
+      <div class="error" id="fileError"></div>
+      <label for="cvText">CV text preview (editable)</label>
+      <textarea id="cvText" rows="9" placeholder="For .txt files this fills automatically. For PDF/DOCX in this prototype, paste your CV text here after selecting the file."></textarea>
+      <p class="hint">Prototype note: full PDF/DOCX parsing comes later — file selection + text review works now.</p>
+    </section>
+
+    <section>
+      <h2>2. Add Job Description</h2>
+      <p class="sub">Paste the role you want to apply for (PRD Feature 2).</p>
+      <label for="jdText">Job description</label>
+      <textarea id="jdText" rows="12" placeholder="Paste the job description here… e.g. Junior Data Analyst — Must have: Excel, Data analysis. Nice to have: SQL, Power BI."></textarea>
+      <div class="hint"><span id="jdCount">0</span> characters • minimum 50 to analyze</div>
+      <div class="error" id="jdError"></div>
+    </section>
+
+    <div class="actions">
+      <button class="btn-primary" id="analyzeBtn" disabled>Analyze My CV</button>
+      <button class="btn-secondary" id="resetBtn" type="button">Reset</button>
+      <span class="hint" id="ctaHint">Select a CV file and paste a job description to enable analysis.</span>
+    </div>
+
+    <section id="results" aria-live="polite">
+      <h2>3. Analysis Results</h2>
+      <p class="sub">Prototype keyword match — explanations, not just a score. Full AI analysis comes later.</p>
+      <div class="result-grid">
+        <div class="card good">
+          <strong>Skills you already have</strong>
+          <div id="matchList" style="margin-top:8px"></div>
+        </div>
+        <div class="card gap">
+          <strong>Skills not clearly shown</strong>
+          <div id="gapList" style="margin-top:8px"></div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <strong>Suggestions</strong>
+        <div id="suggestList" style="margin-top:8px; font-size:14px"></div>
+      </div>
+      <p class="note">Prototype does not invent experience — it only surfaces keywords found in the JD vs your CV text. <span id="resultMeta"></span></p>
+    </section>
+  </main>
+</div>
+
+<script>
+  const SKILLS = ["python","git","sql","rest api","rest apis","excel","data analysis","problem solving","power bi","javascript","typescript","react","next.js","node","communication","teamwork","machine learning"];
+  const cvFile = document.getElementById('cvFile');
+  const dropzone = document.getElementById('dropzone');
+  const fileMeta = document.getElementById('fileMeta');
+  const fileError = document.getElementById('fileError');
+  const cvText = document.getElementById('cvText');
+  const jdText = document.getElementById('jdText');
+  const jdCount = document.getElementById('jdCount');
+  const jdError = document.getElementById('jdError');
+  const analyzeBtn = document.getElementById('analyzeBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const ctaHint = document.getElementById('ctaHint');
+  const results = document.getElementById('results');
+  let cvFileObj = null;
+
+  function showError(el, msg) { el.textContent = msg; el.style.display = msg ? 'block' : 'none'; }
+  function fmtBytes(n) { if (n < 1024) return n + ' B'; if (n < 1048576) return (n/1024).toFixed(1) + ' KB'; return (n/1048576).toFixed(1) + ' MB'; }
+
+  function validate() {
+    const hasFile = !!cvFileObj;
+    const jdOk = jdText.value.trim().length >= 50;
+    analyzeBtn.disabled = !(hasFile && jdOk);
+    ctaHint.textContent = !hasFile ? 'Select a CV file to enable analysis.'
+      : !jdOk ? 'Paste at least 50 characters of job description.'
+      : 'Ready — click Analyze My CV.';
+  }
+
+  function handleFile(file) {
+    showError(fileError, ''); showError(jdError, '');
+    if (!file) return;
+    const okExt = /\.(pdf|docx|txt|md)$/i.test(file.name);
+    if (!okExt) { showError(fileError, 'Unsupported file type. Use PDF, DOCX, or TXT.'); return; }
+    if (file.size > 10 * 1024 * 1024) { showError(fileError, 'File too large (max 10MB).'); return; }
+    cvFileObj = file;
+    fileMeta.innerHTML = '<strong>' + file.name + '</strong> • ' + fmtBytes(file.size);
+    if (/\.txt$|\.md$/i.test(file.name)) {
+      const r = new FileReader();
+      r.onload = () => { cvText.value = String(r.result).slice(0, 20000); validate(); };
+      r.readAsText(file);
+    } else {
+      if (!cvText.value.trim()) cvText.placeholder = file.name + ' selected. Paste your CV text here for this prototype (PDF/DOCX auto-parse comes later).';
+      validate();
+    }
+  }
+
+  dropzone.addEventListener('click', () => cvFile.click());
+  dropzone.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') cvFile.click(); });
+  ['dragover','dragenter'].forEach(ev => dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.classList.add('dragover'); }));
+  ['dragleave','drop'].forEach(ev => dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.classList.remove('dragover'); }));
+  dropzone.addEventListener('drop', e => { if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]); });
+  cvFile.addEventListener('change', () => handleFile(cvFile.files[0]));
+  jdText.addEventListener('input', () => { jdCount.textContent = jdText.value.length; validate(); });
+  cvText.addEventListener('input', validate);
+
+  resetBtn.addEventListener('click', () => {
+    cvFileObj = null; cvFile.value = ''; cvText.value = ''; jdText.value = '';
+    jdCount.textContent = '0'; fileMeta.textContent = 'No file selected yet.';
+    results.style.display = 'none'; document.getElementById('step3').classList.remove('active');
+    showError(fileError, ''); showError(jdError, ''); validate();
+  });
+
+  analyzeBtn.addEventListener('click', () => {
+    const jd = jdText.value.toLowerCase();
+    const cv = cvText.value.toLowerCase();
+    if (!cvFileObj) { showError(fileError, 'Please upload your CV first.'); return; }
+    if (jd.trim().length < 50) { showError(jdError, 'Job description too short (min 50 characters).'); return; }
+    const jdSkills = SKILLS.filter(s => jd.includes(s));
+    const scope = jdSkills.length ? jdSkills : SKILLS.filter(s => jd.includes(s.split(' ')[0]));
+    const matches = scope.filter(s => cv.includes(s));
+    const gaps = scope.filter(s => !cv.includes(s));
+    const matchList = document.getElementById('matchList');
+    const gapList = document.getElementById('gapList');
+    const suggestList = document.getElementById('suggestList');
+    matchList.innerHTML = matches.length ? matches.map(s => '<span class="tag">' + s + '</span>').join('') : '<span class="hint">No overlapping keywords found — add more CV detail.</span>';
+    gapList.innerHTML = gaps.length ? gaps.map(s => '<span class="tag">' + s + '</span>').join('') : '<span class="hint">No gaps detected in this keyword scan.</span>';
+    suggestList.innerHTML = gaps.length
+      ? '<ul style="margin:6px 0 0; padding-left:18px">' + gaps.slice(0,5).map(s => '<li>Address <strong>' + s + '</strong>: if you have it, add a bullet with evidence; if not, do not invent it — describe adjacent experience instead.</li>').join('') + '</ul>'
+      : 'Your CV covers the detected keywords. Tighten bullets with measurable outcomes.';
+    document.getElementById('resultMeta').textContent = 'Checked ' + scope.length + ' keywords against ' + (cvFileObj ? cvFileObj.name : 'CV') + '.';
+    results.style.display = 'block';
+    document.getElementById('step3').classList.add('active');
+    results.scrollIntoView({ behavior: 'smooth' });
+  });
+
+  validate();
+</script>
+</body>
+</html>
