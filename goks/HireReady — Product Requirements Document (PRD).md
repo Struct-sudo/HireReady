@@ -302,3 +302,34 @@ The user is now ready to apply.
 
 > **HireReady should enable a job seeker to upload their CV, provide a job description, understand their strengths and gaps, improve their application, and prepare for the interview.**
 
+Why PostgreSQL was used as the database
+PostgreSQL (Postgres) is a free, open-source relational database — where HireReady will store all structured data long-term.
+
+### Why it fits HireReady
+* **Relational:** perfect for linked data: `users -> applications -> cv + jd + analysis + suggestions`
+* **Reliable:** ACID transactions — an application + its analysis either saves fully or not at all
+* **Typed + searchable:** JSONB for AI output, full-text search for skills, indexes for fast lookups
+* **Works with your stack:** Drizzle ORM in Next.js talks to it, Better Auth stores users/sessions in it
+
+### Core ideas
+1. **Table = collection:** e.g. `applications (id, user_id, cv_id, jd_id, created_at)`
+2. **Row = one record**, **Column = field**, **Schema = structure + types**
+3. **Primary key / Foreign key:** `applications.user_id -> users.id` links data
+4. **SQL:** `SELECT * FROM applications WHERE user_id = '...';`
+5. **Migration:** versioned SQL change in `drizzle/` — e.g. add `cover_letter` column
+
+### Locally for you
+* Runs in Docker: `docker compose up -d db` → Postgres 16 on `localhost:5432`
+* Next.js connects via `DATABASE_URL=postgres://user:pass@localhost:5432/hireready`
+* Data persists in a Docker volume even if container restarts
+* R2 is separate — only CV files go there, everything else lives in Postgres
+
+### Minimal HireReady example
+```sql
+users(id, email) -- managed by Better Auth
+cvs(id, user_id, raw_text, skills JSONB)
+job_descriptions(id, user_id, raw_text)
+applications(id, user_id, cv_id, jd_id, analysis JSONB)
+```
+
+I asked the AI builder to improve the contrast between the primary button and its background and make the button more visually prominent. The updated design reflects this by making the primary CTA easier to notice and its text clearer to read.
