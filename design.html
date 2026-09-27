@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HireReady — Design System Preview</title>
+<style>
+  :root {
+    --primary-600: #1D4ED8;
+    --primary-500: #2563EB;
+    --primary-100: #DBEAFE;
+    --accent-500: #7C3AED;
+    --neutral-900: #111827;
+    --neutral-600: #4B5563;
+    --neutral-300: #D1D5DB;
+    --neutral-100: #F3F4F6;
+    --neutral-0: #FFFFFF;
+    --success: #059669;
+    --warning: #D97706;
+    --danger: #DC2626;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --shadow: 0 4px 16px rgba(17,24,39,.08);
+    --font: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font); background: var(--neutral-100); color: var(--neutral-900); }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 32px 20px 64px; }
+  header { background: var(--neutral-0); border: 1px solid var(--neutral-300); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow); }
+  header h1 { margin: 0 0 8px; font-size: 28px; }
+  header p { margin: 0; color: var(--neutral-600); }
+  .badge { display: inline-block; background: var(--primary-100); color: var(--primary-600); font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; margin-bottom: 12px; }
+  section { background: var(--neutral-0); border: 1px solid var(--neutral-300); border-radius: var(--radius-lg); padding: 24px; margin-top: 20px; box-shadow: var(--shadow); }
+  h2 { margin: 0 0 16px; font-size: 20px; }
+  .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+  .swatch { border: 1px solid var(--neutral-300); border-radius: var(--radius-md); overflow: hidden; }
+  .swatch div { height: 64px; }
+  .swatch span { display: block; padding: 8px 10px; font-size: 13px; }
+  .type-scale h1 { font-size: 36px; margin: 8px 0; }
+  .type-scale h2 { font-size: 28px; margin: 8px 0; }
+  .type-scale h3 { font-size: 20px; margin: 8px 0; }
+  .type-scale p { color: var(--neutral-600); }
+  .btn-row { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn { font-family: var(--font); font-size: 15px; font-weight: 600; padding: 12px 20px; border-radius: var(--radius-md); border: 1px solid transparent; cursor: pointer; }
+  .btn-primary { background: var(--primary-600); color: #fff; }
+  .btn-primary:hover { background: var(--primary-500); }
+  .btn-secondary { background: #fff; border-color: var(--neutral-300); color: var(--neutral-900); }
+  .btn-accent { background: var(--accent-500); color: #fff; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  label { font-size: 14px; font-weight: 600; display: block; margin: 16px 0 6px; }
+  input[type=text], textarea { width: 100%; font-family: var(--font); font-size: 15px; padding: 12px; border: 1px solid var(--neutral-300); border-radius: var(--radius-md); background: #fff; }
+  input:focus, textarea:focus { outline: 2px solid var(--primary-100); border-color: var(--primary-500); }
+  .hint { font-size: 13px; color: var(--neutral-600); margin-top: 6px; }
+  .result { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  .card { border: 1px solid var(--neutral-300); border-radius: var(--radius-md); padding: 16px; }
+  .card.good { border-left: 4px solid var(--success); }
+  .card.gap { border-left: 4px solid var(--warning); }
+  @media (max-width: 640px) { .result { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="badge">HIREREADY • DESIGN SYSTEM V0.1</div>
+    <h1>Design Preview</h1>
+    <p>Colors, typography, buttons, and inputs for Upload CV → Add JD → Analyze → Improve → Prepare → Apply.</p>
+  </header>
+
+  <section>
+    <h2>1. Colors</h2>
+    <div class="swatches">
+      <div class="swatch"><div style="background:#1D4ED8"></div><span>Primary 600<br>#1D4ED8</span></div>
+      <div class="swatch"><div style="background:#2563EB"></div><span>Primary 500<br>#2563EB</span></div>
+      <div class="swatch"><div style="background:#DBEAFE"></div><span>Primary 100<br>#DBEAFE</span></div>
+      <div class="swatch"><div style="background:#7C3AED"></div><span>Accent<br>#7C3AED</span></div>
+      <div class="swatch"><div style="background:#111827"></div><span>Neutral 900<br>#111827</span></div>
+      <div class="swatch"><div style="background:#4B5563"></div><span>Neutral 600<br>#4B5563</span></div>
+      <div class="swatch"><div style="background:#059669"></div><span>Success<br>#059669</span></div>
+      <div class="swatch"><div style="background:#D97706"></div><span>Warning<br>#D97706</span></div>
+      <div class="swatch"><div style="background:#DC2626"></div><span>Danger<br>#DC2626</span></div>
+    </div>
+  </section>
+
+  <section class="type-scale">
+    <h2>2. Typography (Inter / system)</h2>
+    <h1>Heading 1 — 36px / Analyze your fit</h1>
+    <h2>Heading 2 — 28px / Strong matches</h2>
+    <h3>Heading 3 — 20px / Areas to improve</h3>
+    <p>Body — 15-16px / HireReady compares your CV with the job description and explains strengths and gaps, not just a score.</p>
+  </section>
+
+  <section>
+    <h2>3. Buttons</h2>
+    <div class="btn-row">
+      <button class="btn btn-primary">Analyze CV</button>
+      <button class="btn btn-secondary">Review suggestions</button>
+      <button class="btn btn-accent">Prepare for Interview</button>
+      <button class="btn btn-primary" disabled>Uploading…</button>
+    </div>
+    <p class="hint">Primary for main action, Secondary for review/edit, Accent for interview step.</p>
+  </section>
+
+  <section>
+    <h2>4. Sample Inputs</h2>
+    <label for="job-title">Job title</label>
+    <input id="job-title" type="text" placeholder="e.g. Junior Data Analyst" value="Junior Data Analyst" />
+    <label for="jd">Job description</label>
+    <textarea id="jd" rows="4" placeholder="Paste the job description here…">Must have: Excel, Data analysis. Nice to have: SQL, Power BI.</textarea>
+    <p class="hint">Inputs use 10px radius, 1px neutral border, blue focus ring.</p>
+    <div class="result">
+      <div class="card good"><strong>Skills you already have</strong><br>Excel • Data analysis • Problem solving</div>
+      <div class="card gap"><strong>Skills not clearly shown</strong><br>SQL • Power BI</div>
+    </div>
+  </section>
+</div>
+</body>
+</html>
