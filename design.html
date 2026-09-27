@@ -6,6 +6,8 @@
 <title>HireReady — Design System Preview</title>
 <style>
   :root {
+    --primary-800: #1E3A8A;
+    --primary-700: #1E40AF;
     --primary-600: #1D4ED8;
     --primary-500: #2563EB;
     --primary-100: #DBEAFE;
@@ -21,6 +23,7 @@
     --radius-md: 10px;
     --radius-lg: 16px;
     --shadow: 0 4px 16px rgba(17,24,39,.08);
+    --shadow-primary: 0 8px 24px rgba(30,58,138,.38);
     --font: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
   * { box-sizing: border-box; }
@@ -40,10 +43,12 @@
   .type-scale h2 { font-size: 28px; margin: 8px 0; }
   .type-scale h3 { font-size: 20px; margin: 8px 0; }
   .type-scale p { color: var(--neutral-600); }
-  .btn-row { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
   .btn { font-family: var(--font); font-size: 15px; font-weight: 600; padding: 12px 20px; border-radius: var(--radius-md); border: 1px solid transparent; cursor: pointer; }
-  .btn-primary { background: var(--primary-600); color: #fff; }
-  .btn-primary:hover { background: var(--primary-500); }
+  .btn-primary { background: var(--primary-700); color: #fff; font-size: 16px; font-weight: 800; letter-spacing: .01em; padding: 15px 30px; border: 2px solid var(--primary-800); box-shadow: var(--shadow-primary); }
+  .btn-primary:hover { background: var(--primary-800); transform: translateY(-1px); box-shadow: 0 12px 28px rgba(30,58,138,.45); }
+  .btn-primary:active { transform: translateY(0); box-shadow: 0 4px 12px rgba(30,58,138,.4); }
+  .btn-primary:focus-visible { outline: 3px solid #BFDBFE; outline-offset: 3px; }
   .btn-secondary { background: #fff; border-color: var(--neutral-300); color: var(--neutral-900); }
   .btn-accent { background: var(--accent-500); color: #fff; }
   .btn:disabled { opacity: .5; cursor: not-allowed; }
@@ -69,6 +74,8 @@
   <section>
     <h2>1. Colors</h2>
     <div class="swatches">
+      <div class="swatch"><div style="background:#1E3A8A"></div><span>Primary 800<br>#1E3A8A</span></div>
+      <div class="swatch"><div style="background:#1E40AF"></div><span>Primary 700<br>#1E40AF</span></div>
       <div class="swatch"><div style="background:#1D4ED8"></div><span>Primary 600<br>#1D4ED8</span></div>
       <div class="swatch"><div style="background:#2563EB"></div><span>Primary 500<br>#2563EB</span></div>
       <div class="swatch"><div style="background:#DBEAFE"></div><span>Primary 100<br>#DBEAFE</span></div>
@@ -97,7 +104,7 @@
       <button class="btn btn-accent">Prepare for Interview</button>
       <button class="btn btn-primary" disabled>Uploading…</button>
     </div>
-    <p class="hint">Primary for main action, Secondary for review/edit, Accent for interview step.</p>
+    <p class="hint">Primary for main action — now #1E40AF on white (≈8.6:1 white-on-button, AAA for text) with 2px #1E3A8A border, larger padding, and shadow to stand out. Secondary for review/edit, Accent for interview step.</p>
   </section>
 
   <section>
