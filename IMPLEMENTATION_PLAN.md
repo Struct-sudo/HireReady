@@ -1,6 +1,7 @@
 # HireReady — Detailed Implementation Plan
 
 Derived from `goks/HireReady — Product Requirements Document (PRD).md`.
+Stack (locked): Next.js (App Router + TS) + PostgreSQL (local Docker) + Better Auth + Cloudflare R2. App + DB run locally; R2 is remote.
 Journey: **Upload CV → Add Job Description → Analyze → Improve → Prepare → Apply**
 Priority: Must (CV upload, JD input, analysis, strengths/gaps, suggestions) → Should (tailored CV, cover letter) → Nice (interview prep).
 
@@ -25,22 +26,23 @@ Priority: Must (CV upload, JD input, analysis, strengths/gaps, suggestions) → 
 
 ---
 
-## Phase 2: Architecture & Technical Decisions
+## Phase 2: Architecture & Technical Decisions (LOCKED)
 
 **Goal:** Decide stack and boundaries; make AI behavior testable and safe.
 
-**Decisions to lock:**
-- **App type:** Web app (recommended: React/Next.js frontend + Python/Node API). Monorepo with `web/`, `api/`, `prompts/`, `tests/`
-- **Storage:** Postgres/SQLite for `applications`; object storage (S3-compatible/local) for CV files; no long-term retention by default
-- **AI layer:** LLM API behind a service wrapper (`ai/analyze.py`) with versioned prompts, JSON-schema output, temperature ~0–0.3, timeouts/retries, cost logging
-- **CV parsing:** PDF/DOCX → text (e.g. `pypdf`/`mammoth`), 10MB limit, char cap, PII redaction in logs
-- **Auth (MVP):** magic-link or session-based; anonymous draft allowed but deletable
-- **Environments:** `.env` for keys, `dev/staging/prod`, `/health` endpoint
+**Locked stack:**
+- **Framework:** Next.js (App Router + TypeScript) full-stack. `app/` routes for UI, Route Handlers under `app/api/` for API, Server Actions where suitable. No separate Python/Node backend for MVP.
+- **Database:** PostgreSQL running **locally** via Docker Compose (`postgres:16`, persistent volume). Accessed via Drizzle ORM + `postgres`/`pg` driver with SQL migrations in `drizzle/`.
+- **Auth:** Better Auth with Next.js integration + Drizzle adapter on Postgres. Email + password for MVP (magic-link optional later). Sessions in DB, protected routes via middleware + server session check.
+- **File storage:** Cloudflare R2 (S3-compatible API via AWS SDK v3). CV originals in R2 (`hireready-dev` bucket, `cv/<userId>/<appId>/...` keys, presigned URLs, 10MB cap). App + DB run locally; R2 is the only remote dependency in dev (creds in `.env.local`). Optional local S3 emulator (MinIO) only if R2 unreachable.
+- **AI layer:** Server-only service `lib/ai/analyze.ts` calling LLM API with versioned prompts in `prompts/`, Zod JSON-schema validation, temperature 0–0.3, timeouts/retries, token/cost logging. No API keys on client.
+- **CV parsing:** Server-side PDF/DOCX → text (`pdfjs`/`pdf-parse` + `mammoth`), char cap, PII redaction in logs.
+- **Environments:** `.env.local` for `DATABASE_URL`, `BETTER_AUTH_SECRET/URL`, `R2_ACCOUNT_ID/ACCESS_KEY/SECRET_KEY/BUCKET`, `LLM_API_KEY`. `docker-compose.yml` for local Postgres. `/api/health` checks Next.js + DB + R2 reachability.
 
 **Concrete output:**
-- `ARCHITECTURE.md` (diagram + decisions + alternatives rejected)
-- Runnable skeleton: `web/` + `api/` + `/health` OK, lint/test/CI baseline
-- Folder structure agreed and scaffolded
+- `ARCHITECTURE.md` (diagram: Browser → Next.js → Postgres / R2 / LLM)
+- Runnable skeleton: `npx create-next-app`, `docker compose up -d db`, `drizzle migrate`, `npm run dev` green, `/api/health` OK
+- Baseline: ESLint + Prettier + Vitest + Playwright, CI workflow
 
 ---
 
@@ -55,17 +57,18 @@ Priority: Must (CV upload, JD input, analysis, strengths/gaps, suggestions) → 
 - `Suggestion { id, target_section, current, proposed, reason, status: pending/accepted/dismissed }`
 - `Application { id, cv_id, jd_id, analysis, suggestions[], tailored_cv, cover_letter, interview_session }`
 
-**API (REST):**
-- `POST /api/cv/upload` → `CV`
+**API (Next.js Route Handlers under `app/api/`):**
+- `POST /api/cv/upload` → `CV` (upload to R2, parse server-side, insert Drizzle row)
 - `POST /api/jd` → `JobDescription`
 - `POST /api/analyze { cv_id, jd_id }` → `Analysis`
 - `POST /api/suggestions` → `Suggestion[]`, `PATCH /api/suggestions/:id`
 - `POST /api/tailored-cv`, `POST /api/cover-letter`, `POST /api/interview/questions`, `POST /api/interview/feedback`
 - `GET /api/applications/:id` (workspace aggregate)
+- Better Auth mounted at `/api/auth/[...all]`; all app APIs require session except `/api/health`
 
 **Concrete output:**
-- JSON schemas + TypeScript/Python types
-- API spec (OpenAPI) + mocked responses
+- Drizzle schemas + migrations in `drizzle/` (+ Better Auth tables via adapter) + Zod validators
+- Route Handler contracts + mocked responses
 - Validation rules: file types, size, empty JD, over-long inputs
 
 ---
@@ -98,7 +101,7 @@ Priority: Must (CV upload, JD input, analysis, strengths/gaps, suggestions) → 
 - Evals: Junior Data Analyst case must yield Excel/Data analysis/Problem solving as matches; SQL/Power BI/detail as gaps; Software case must yield Python/Git matches, SQL/REST API gaps
 
 **Concrete output:**
-- `prompts/analyze-v1.md` + `ai/analyze.py` + eval suite
+- `prompts/analyze-v1.md` + `lib/ai/analyze.ts` + eval suite (Vitest)
 - Analysis results UI with two groups + explanations
 - Pass rate: 100% schema-valid, ≥4/5 manual relevance on fixtures
 
@@ -128,7 +131,7 @@ Priority: Must (CV upload, JD input, analysis, strengths/gaps, suggestions) → 
 
 **Tasks:**
 - Workspace layout with tabs: Analysis | Strengths | Gaps | Suggestions | Tailored CV | Cover Letter | Interview
-- Persistence: autosave draft application, resume after refresh, delete application + files (privacy)
+- Persistence: autosave draft application to local Postgres, resume after refresh, delete application + R2 object + DB rows (privacy)
 - Interview: question generator from job+JD+CV (behavioral + technical + role-specific), answer box, feedback prompt (structure, relevance, STAR hints), retry
 - Explicit non-goals enforced: no video, no job search, no auto-apply, no LinkedIn
 
@@ -144,11 +147,11 @@ Priority: Must (CV upload, JD input, analysis, strengths/gaps, suggestions) → 
 **Goal:** MVP-safe and releasable.
 
 **Tasks:**
-- Privacy: retention policy (e.g. 30 days), delete-my-data, PII redaction in logs, consent notice
-- Security: file-type sniffing, size caps, rate limits on AI endpoints, secrets handling, CORS
+- Privacy: retention policy (e.g. 30 days), Better Auth session handling, delete-my-data purges Postgres + R2, PII redaction in logs, consent notice
+- Security: R2 presigned URLs (no public buckets), file-type sniffing, 10MB cap, rate limits on AI routes, server-only secrets, middleware route protection
 - Quality: unit + integration + E2E (Playwright) for Upload→JD→Analyze→Suggest→Tailor→Letter→Interview; prompt regression evals; latency/cost budgets per analyze call
 - Observability: structured logs, AI call tracing (prompt version, tokens, cost), error tracking
-- Deploy: Dockerfile, staging/prod, backups, rollback plan
+- Local-first DevOps: `docker-compose.yml` (Postgres), `Dockerfile` for Next.js, staging/prod later; backups via `pg_dump` + R2 versioning
 
 **Concrete output:**
 - Privacy notice + data-deletion working
